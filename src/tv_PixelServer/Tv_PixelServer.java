@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -28,13 +29,14 @@ public class Tv_PixelServer {
     public final boolean DEBUG = true;
     int ncon=0;       // Número de conexiones tramitadas
     Socket[][] Tv_matrix;
-    String[][] Tv_PixelValue;
-    // Atributos para gestión de las comunicaciones con sockets
+    PrintWriter [][] out;
+    BufferedReader[][] in;  
+    String[][] Tv_PixelValue;    
+// Atributos para gestión de las comunicaciones con sockets
     Socket sNetCli=null;
     ServerSocket sNetServer=null;
-    DataInputStream din;  
-    DataOutputStream dout;  
-    BufferedReader br;  
+ 
+   
     
     
     
@@ -70,35 +72,25 @@ return true;
             for (int c=0;c<columnas;c++){
                 try {
                     Tv_matrix[f][c]=sNetServer.accept();
-                    ObjectOutputStream oos = new ObjectOutputStream(Tv_matrix[f][c].getOutputStream());
-                    //write object to Socket
-                    oos.writeObject("OK");       
+                    out[f][c] = new PrintWriter(Tv_matrix[f][c].getOutputStream(), true);
+                    in[f][c] = new BufferedReader(new InputStreamReader(Tv_matrix[f][c].getInputStream()));
+                    out[f][c].println("OK");
                     Tv_PixelValue[f][c]="V000000001 0000"; // Pixel en negro y sin caracter
                     System.out.print("[*]  ");
                 } catch (IOException ex) {
                     Logger.getLogger(Tv_PixelServer.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }    
-        }
+                } // try-catch
+            } // for columnas    
+        } // for filas
         System.out.println("\nMatriz generada!");
-        
 }    
 /**
  * Envía el valor al objeto TV_Pixel, el valor con el que se quiere actualizar
  * @param PixSocket     Objeto Tv_Pixel a actualizar 
  * @param cmd           Comando ( valor ) para el objeto
  */
-    public void update_pixel(Socket PixSocket, String cmd){
-        OutputStream outstream;
-        PrintWriter out;
-        try {
-            outstream = PixSocket.getOutputStream();
-            out = new PrintWriter(outstream);
-            out.print(cmd);
-            out.flush();
-        } catch (IOException ex) {
-            Logger.getLogger(Tv_PixelServer.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    public void update_pixel(int fila, int columna, String cmd){
+         Tv_PixelValue[fila][columna] = cmd;
     }
     
   /**
@@ -108,10 +100,12 @@ return true;
    * @param cmd         valor
    */  
     public void set_pixel(int fila, int columna, String cmd){
-    
-        Tv_PixelValue[fila][columna] = cmd;
-    
+       
+        out[fila][columna].println(cmd);  // Envía valor al cliente
     }
+    
+    // update matrix necesita que antes se haya generado el 
+    // bitmap (actualización de los pixels)
     public void update_matrix(){
 
         int f;
@@ -121,7 +115,7 @@ return true;
         c = Tv_matrix[0].length;
         for (int fil=0;fil<f;fil++){
             for (int col=0;col<c;col++){
-                update_pixel(Tv_matrix[fil][col],Tv_PixelValue[fil][col]);
+                set_pixel(fil,col,Tv_PixelValue[fil][col]);
             } // col
         } // fil
     
@@ -133,6 +127,14 @@ return true;
     }
 
 public boolean genera_bitmap(int filas, int columnas){
+    
+    String cmd;
+    int fila;
+    int columna;
+        cmd = "V000000001 0000";
+        fila = 0;
+        columna = 0;
+        update_pixel(fila, columna, cmd);
         return true;
 }    
  public void run(int filas, int columnas){

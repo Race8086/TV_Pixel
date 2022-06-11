@@ -19,8 +19,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,23 +39,40 @@ import jdk.nashorn.internal.objects.NativeString;
  
 class NetworkClient {
 
-    public Socket sClient;
-    public DataInputStream din;
-    public DataOutputStream dout;
-    public BufferedReader br;
-    public InetAddress address;
-    public int Port;
+    public Socket sClient;              // Socket para establecer la conexión
+    public PrintWriter dout;            // Enviar datos
+    public BufferedReader _in;           // Recibir datos
+    public InetAddress address;         // Dirección del cliente
+    public int Port;                    // Puerto de conexión
     /** constructor de la clase
      *  estblece IP del cliente y puerto de conexión
      * @throws IOException  Sin implementar 
      */
-    public void NetworkClient() throws IOException{
+    public void NetworkClient() {
 
-        address=InetAddress.getLocalHost();
-        Port = 8086;
-        // ¿Y si falla?
+        try {
+            address=InetAddress.getLocalHost();
+             Port = 8086;
+        } catch (UnknownHostException ex) {
+            Logger.getLogger(NetworkClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
+       
     }
-    
+      public void sendMessage(String msg) {
+        dout.println(msg);
+
+    }
+
+    public void stopConnection() {
+        try {
+            _in.close();
+            dout.close();
+            sClient.close();
+        } catch (IOException ex) {
+            Logger.getLogger(NetworkClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
+ 
+    }  
     /**
      * Registra pixel en la matriz
      * Intenta una conexión al servidor y si le responde satisfactoriamente
@@ -66,20 +85,19 @@ class NetworkClient {
             sClient= new Socket("localhost",6666);
             //String strline=null;
         // Canales para enviar y recibir mensajes
-            din=new DataInputStream(sClient.getInputStream());  
+            _in = new BufferedReader(new InputStreamReader(sClient.getInputStream()));
             //dout=new DataOutputStream(sClient.getOutputStream());  
             //br=new BufferedReader(new InputStreamReader(System.in));      
         
             //dout.writeUTF(address.toString());  // Envía la dirección IP
             //dout.flush();
-            mensaje = din.readUTF();
+            mensaje = _in.readLine();
             if ("OK".equals(mensaje)){
                 System.out.println("Conexión establecida.Pixel ON!");
                 return true;
              }
             else{
-                dout.close();
-                sClient.close();
+                stopConnection();
                 return false;
             }
         } catch (IOException ex) {
@@ -320,11 +338,10 @@ public void clientTV(){
     Tv_netCli = new NetworkClient();
     if (Tv_netCli.regPixel()){
         setup();                // Setup incial
-        //testColors();           // prueba de colores y listeners
-        
+        //testColors();           // prueba de colores y listeners 
         while (Pixel_On){
                 try {
-                    cmd = Tv_netCli.din.readUTF();
+                    cmd = Tv_netCli._in.readLine();
                     Pixel_On= doCmd(cmd);   //Empty black screen
                 } catch (IOException ex) {
                     Logger.getLogger(Tv_PixelClient.class.getName()).log(Level.SEVERE, null, ex);
