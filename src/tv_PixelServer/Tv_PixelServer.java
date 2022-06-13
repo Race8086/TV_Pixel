@@ -43,6 +43,7 @@ public class Tv_PixelServer {
         "V111111000B0000",
         "V000111111Y0000",
         "V000000001E0000",
+        "V000000001 0000",
         "Q"  
     };
 
@@ -150,7 +151,7 @@ return true;
     // Cierra todas las conexines abiertas
     int f;
         int c;
-        
+        System.out.println("Cerrando matriz...");
         f = out.length;
         c = out[0].length;
         for (int fil=0;fil<f;fil++){
@@ -173,6 +174,11 @@ public boolean genera_bitmap(int filas, int columnas,int _frame){
         fila = 0;
         columna = 0;
         update_pixel(fila, columna, cmd);
+        update_pixel(fila, columna+1, cmd);
+        update_pixel(fila, columna+2, cmd);
+        update_pixel(fila+1, columna, cmd);
+        update_pixel(fila+1, columna+1, cmd);
+        update_pixel(fila+1, columna+2, cmd);
         if ("Q".equals(cmd)) result = false;
         return result;
 }    
@@ -183,19 +189,26 @@ public boolean genera_bitmap(int filas, int columnas,int _frame){
      System.out.println("Iniciando Server ... ");
    if (Crea_NetServer()){
         crea_matrix(filas,columnas);
+         try {
+             TimeUnit.MILLISECONDS.sleep(10000);
+         } catch (InterruptedException ex) {
+             Logger.getLogger(Tv_PixelServer.class.getName()).log(Level.SEVERE, null, ex);
+         }
         System.out.print("");
         while (genera_bitmap(filas,columnas,_frames))
         {
              update_matrix();
              _frames ++;
             try {
-                TimeUnit.MILLISECONDS.sleep(500);
+                TimeUnit.MILLISECONDS.sleep(1000);
             } catch (InterruptedException ex) {
                 Logger.getLogger(Tv_PixelServer.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         close_matrix();
    }
+     System.out.println("Terminando el servidor");
+     
  }   
 /**
  * Inicia un servidor tv_Pixel
@@ -205,8 +218,14 @@ public boolean genera_bitmap(int filas, int columnas,int _frame){
     public static void main(String args[]){
 
     Tv_PixelServer app = new Tv_PixelServer();
-    app.run(1,1); // Matriz de 2 x 2
-    
-}
+    app.run(1,3); // Matriz de 2 x 2
+        try {
+            app.sNetServer.close();
+            System.out.println("Cerrando sockets ...");
+        } catch (IOException ex) {
+            Logger.getLogger(Tv_PixelServer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        System.out.println("Terminando apicación");
+    }
 
 }
