@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,7 +29,25 @@ public class Tv_PixelServer {
     
     public final boolean DEBUG = true;
     int ncon=0;       // Número de conexiones tramitadas
-    // meto un comentario
+    
+    String[] texto = {
+    
+        "V000000001>0000",
+        "V111000001R0000",
+        "V000111000M0000",
+        "V000000111S0000",
+        "V000000001*0000",
+        "V00000011180000",
+        "V00011100160000",
+        "V111000001*0000",
+        "V111111000B0000",
+        "V000111111Y0000",
+        "V000000001E0000",
+        "Q"  
+    };
+
+
+// meto un comentario
     Socket[][] Tv_matrix;
     PrintWriter [][] out;
     BufferedReader[][] in;  
@@ -129,28 +148,51 @@ return true;
     
     public void close_matrix(){
     // Cierra todas las conexines abiertas
+    int f;
+        int c;
+        
+        f = out.length;
+        c = out[0].length;
+        for (int fil=0;fil<f;fil++){
+            for (int col=0;col<c;col++){
+                out[fil][col].close();
+                //in [fil][col].close();               
+            } // col
+        } // fil
     }
 
-public boolean genera_bitmap(int filas, int columnas){
+public boolean genera_bitmap(int filas, int columnas,int _frame){
     
     String cmd;
     int fila;
     int columna;
+    boolean result;
     
-        cmd = "V000000001 0000";
+        result = true;
+        cmd = texto[_frame];
         fila = 0;
         columna = 0;
         update_pixel(fila, columna, cmd);
-        return true;
+        if ("Q".equals(cmd)) result = false;
+        return result;
 }    
  public void run(int filas, int columnas){
+     
+     int _frames=0;
+     
      System.out.println("Iniciando Server ... ");
    if (Crea_NetServer()){
         crea_matrix(filas,columnas);
         System.out.print("");
-        while (genera_bitmap(filas,columnas))
+        while (genera_bitmap(filas,columnas,_frames))
         {
              update_matrix();
+             _frames ++;
+            try {
+                TimeUnit.MILLISECONDS.sleep(500);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Tv_PixelServer.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         close_matrix();
    }
