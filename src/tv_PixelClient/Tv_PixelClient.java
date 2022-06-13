@@ -66,10 +66,10 @@ class NetworkClient {
      * termina con true, en otro caso devuelve false
      * @return true = registro correcto, false = sin registro o Error
      */
-    public boolean regPixel(){
+    public boolean regPixel(String _ip,int _port){
         String  mensaje;
         try {
-            sClient= new Socket("localhost",8086);
+            sClient= new Socket(_ip,_port);
             //String strline=null;
         // Canales para enviar y recibir mensajes
             _in = new BufferedReader(new InputStreamReader(sClient.getInputStream()));
@@ -116,7 +116,8 @@ class NetworkClient {
  */
 class MyCanvas extends JComponent {
 
-    String cad="A";
+    String cad="A";  
+    // creo que no sirve para nada esta cad??
     int x=120;
     int y=80;
   public void paint(Graphics g) {
@@ -323,7 +324,7 @@ public void clientTV(){
     String cmd;
     boolean Pixel_On = true;
     Tv_netCli = new NetworkClient();
-    if (Tv_netCli.regPixel()){
+    if (Tv_netCli.regPixel("192.168.1.210",8086)){
         setup();                // Setup incial
         //testColors();           // prueba de colores y listeners 
         while (Pixel_On){

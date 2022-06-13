@@ -28,13 +28,14 @@ public class Tv_PixelServer {
     
     public final boolean DEBUG = true;
     int ncon=0;       // Número de conexiones tramitadas
+    // meto un comentario
     Socket[][] Tv_matrix;
     PrintWriter [][] out;
     BufferedReader[][] in;  
     String[][] Tv_PixelValue;    
 // Atributos para gestión de las comunicaciones con sockets
     Socket sNetCli=null;
-    ServerSocket sNetServer=null;
+    ServerSocket sNetServer=null;  
  
    
     
@@ -135,6 +136,7 @@ public boolean genera_bitmap(int filas, int columnas){
     String cmd;
     int fila;
     int columna;
+    
         cmd = "V000000001 0000";
         fila = 0;
         columna = 0;
