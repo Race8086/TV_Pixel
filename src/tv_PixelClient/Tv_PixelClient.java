@@ -44,20 +44,7 @@ class NetworkClient {
     public BufferedReader _in;           // Recibir datos
     public InetAddress address;         // Dirección del cliente
     public int Port;                    // Puerto de conexión
-    /** constructor de la clase
-     *  estblece IP del cliente y puerto de conexión
-     * @throws IOException  Sin implementar 
-     */
-    public void NetworkClient() {
-
-        try {
-            address=InetAddress.getLocalHost();
-             Port = 8086;
-        } catch (UnknownHostException ex) {
-            Logger.getLogger(NetworkClient.class.getName()).log(Level.SEVERE, null, ex);
-        }
-       
-    }
+    
       public void sendMessage(String msg) {
         dout.println(msg);
 
@@ -82,7 +69,7 @@ class NetworkClient {
     public boolean regPixel(){
         String  mensaje;
         try {
-            sClient= new Socket("localhost",6666);
+            sClient= new Socket("localhost",8086);
             //String strline=null;
         // Canales para enviar y recibir mensajes
             _in = new BufferedReader(new InputStreamReader(sClient.getInputStream()));

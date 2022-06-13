@@ -43,7 +43,7 @@ public class Tv_PixelServer {
 public boolean Crea_NetServer(){
 
     try {
-        sNetServer = new ServerSocket(6666);
+        sNetServer = new ServerSocket(8086);
         
     } catch (IOException ex) {
         Logger.getLogger(Tv_PixelServer.class.getName()).log(Level.SEVERE, null, ex);
@@ -64,8 +64,12 @@ return true;
  */    
     public void crea_matrix(int filas, int columnas){
         
+        // Inicializa estructuras
         Tv_matrix = new Socket[filas][columnas];
         Tv_PixelValue = new String [filas][columnas];
+        out = new PrintWriter [filas][columnas];
+        in = new BufferedReader[filas][columnas];
+        
         // bucle para crear las conexiones
         for (int f=0;f<filas;f++){
             System.out.print("\nLinea " + f+ ": ");
