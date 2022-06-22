@@ -1,5 +1,6 @@
 /*
-* Clase cliente, solo para sincronizar push
+* TODO:
+*      Implementar parámetros de entrada : Dirección / Puerto del servidor.
  */
 package tv_PixelClient;
 

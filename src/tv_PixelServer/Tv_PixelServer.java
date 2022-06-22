@@ -141,8 +141,9 @@ return true;
         System.out.println("\nMatriz generada!");
 }    
 /**
- * Envía el valor al objeto TV_Pixel, el valor con el que se quiere actualizar
- * @param PixSocket     Objeto Tv_Pixel a actualizar 
+ * Envía el valor lógico del objeto TV_Pixel, el valor con el que se quiere actualizar
+ * @param fila  fila con la que ser registró el objeto Tv_Pixel 
+ * @param columna columna con la que ser registró el objeto Tv_Pixel
  * @param cmd           Comando ( valor ) para el objeto
  */
     public void update_pixel(int fila, int columna, String cmd){
@@ -150,7 +151,7 @@ return true;
     }
     
   /**
-   * Establece valor lógico del pixel virtual. El comnado se envía a través de la conexión socket de salida 
+   * Envia comando al objeto fila, columna. El comnado se envía a través de la conexión socket de salida 
    * establecida entre el servidor y el monitor registrado.
    * @param fila        fila de la matriz (monitor registrado)
    * @param columna     columna de la matriz (monitor registrado)
@@ -274,7 +275,7 @@ public void run(int filas, int columnas){
  }   
 /**
  * Inicia un servidor tv_Pixel
- * @param args 
+ * @param args NO IMPLEMENTADO 
  */ 
     
     public static void main(String args[]){
