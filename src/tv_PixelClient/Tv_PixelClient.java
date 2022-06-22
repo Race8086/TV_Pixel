@@ -36,20 +36,46 @@ import jdk.internal.org.objectweb.asm.util.ASMifier;
 import jdk.nashorn.internal.codegen.CompilerConstants;
 import jdk.nashorn.internal.objects.NativeString;
 
- 
+
+/**
+ * Clase que implementa un cliente para comunicación bidireccinal por sockets IP
+ * @author loned
+ */
 class NetworkClient {
 
+    /**
+     * Socket de conexión.
+     */
     public Socket sClient;              // Socket para establecer la conexión
+    /**
+     * Stream para enviar datos.
+     */
     public PrintWriter dout;            // Enviar datos
+    /**
+     * Buffer de lectura de datos.
+     */
     public BufferedReader _in;           // Recibir datos
+    /**
+     * Objeto dirección IP del Objeto tv_PixelClient.
+     */
     public InetAddress address;         // Dirección del cliente
+    /**
+     * Puerto de conexión al servidor.
+     */
     public int Port;                    // Puerto de conexión
     
-      public void sendMessage(String msg) {
+    /**
+     * Envía mesaje
+     * @param msg mensaje a enviar.
+     */
+    public void sendMessage(String msg) {
         dout.println(msg);
 
     }
 
+    /**
+     * Cierra la conexión establecida, liberado todos los objetos de conexión.
+     */
     public void stopConnection() {
         try {
             _in.close();
@@ -110,7 +136,7 @@ class NetworkClient {
     }
 }
 /**
- * Maneja una etiqueta de texto en modo gráfico,
+ * Clase para manejar una etiqueta de texto en modo gráfico,
  * se puede elegir el tipo de fuente, el color y el tamaño
  * @author loned
  */
@@ -120,6 +146,11 @@ class MyCanvas extends JComponent {
     // creo que no sirve para nada esta cad??
     int x=120;
     int y=80;
+    
+ /**
+  * Método que se invoca automáticamente al refrescar el Canvas
+  * @param g objeto gráfico
+  */   
   public void paint(Graphics g) {
     g.setColor(Color.WHITE);
     g.setFont(new Font("Arial Black", Font.BOLD, 1100));
@@ -128,19 +159,40 @@ class MyCanvas extends JComponent {
   }
 }
 /**
- *
+ * Clase que implementa un objeto Tv_PixelClient.
+ * Este objeto se registra en una determinada posición de una matriz vistual y acepta comandos
+ * de un equipo servidor. Los comando tienen una determinada estructura provocando efectos
+ * visuales en el monitor donde se ejecuta este objeto.
  * @author loned
  */
-
-// Issue  1: No funciona la creación del color a partir de los componentes rgb 
 public class Tv_PixelClient {
+ /**
+  * Marco JFrame que servirá de contenedor al objeto gráfico Canvas.
+  */   
  final JFrame frame = new JFrame("Tv_Pixel");
+ /**
+  * Panel de la ventana
+  */
  JPanel panel;
+ /**
+  * Botón 1. NO IMPLEMENTADO.
+  */
  JButton btn1;
+ /**
+  * Botón 2. NO IMPLEMENTADO.
+  */
  JButton btn2;
+ /**
+  * Objeto para manejar la pantalla.
+  */
  MyCanvas gp;                           // objeto para escribir en modo gráfico
+ /**
+  * Objeto NetworkClient para gestionar las comunicaciones entre Tv_PixelClient y su servidor.
+  */
  NetworkClient  Tv_netCli;              // Objeto para conectar el pixel al servidor
- 
+ /**
+  * Matriz de colores para autodiagnóstico.
+  */
  Color secuence[] = {   Color.WHITE,
                         Color.BLACK,
                         Color.BLUE,
@@ -152,24 +204,59 @@ public class Tv_PixelClient {
                         Color.PINK,
                         Color.GRAY,
                         Color.BLACK};
+ /**
+  * Texto de autodiagnóstico.
+  */
  char texto[] = {'0','9','8','7','6','5','4','3','2','1','0'};
+ /**
+  * Componente Red
+  */
  int r;               // Componente RED de color
+ /**
+  * Componente Verde
+  */
  int g;               // Componente GREEN de color
+ /**
+  * Componente Azul
+  */
  int b;               // Componente BLUE de color
+ /**
+  *  Color por defecto de fondo.
+  */
  Color _defaultColor = Color.BLACK;
+  /**
+  *  Color actual de fondo.
+  */
  Color _currentColor = Color.BLACK;
+ /**
+  * Persistencia del contenido en msec.
+  */
  int latencia;          // Latencia en msec del contenido
  long timer_l;          // timer de latencia
+ /**
+  * Ancho en pixels del monitor asociado al cliente.
+  */
  double w_width;        // Ancho del display
+ /**
+  * Alto en pixels del monitor asociado al cliente.
+  */
  double w_height;       // Alto del display
+ /**
+  * Indicador de pantalla completa (true), en modo ventana (false)
+  */
  boolean bfe_flag;      // Flag full_screen
+ 
  int sections;
 boolean frezze_flag;    // Flag para desactivar latencia
-    /**
-     * @param args the command line arguments
-     */
+/**
+ * Dispositivo gráfico primario asociado al equipo que corre este cliente.
+ */
 static GraphicsDevice device = GraphicsEnvironment
         .getLocalGraphicsEnvironment().getScreenDevices()[0];
+/**
+ * Clase principal que implementa el Pixel.
+ */
+
 public  Tv_PixelClient(){
         this.latencia = 125;            // 125 msec.
         this.timer_l = System.currentTimeMillis();
@@ -178,6 +265,9 @@ public  Tv_PixelClient(){
         this.r = 0; this.g = 0; this.b = 0;
 
 }
+/**
+ * Método de autodiagnóstico que comprueba los colores disponibles.
+ */
 private void testColors(){
     for (int i=0;i<secuence.length;i++){
             //cpanel = new java.awt.Color(r, g, b);
@@ -191,7 +281,7 @@ private void testColors(){
     }
 }
 /**
- * Cambia a modo pantalla completa y actualiza atributos de tamaño
+ * Cambia a modo pantalla completa y actualiza atributos de tamaño.
  */
 private void setFullScr(){
 
@@ -202,7 +292,7 @@ private void setFullScr(){
     this.bfe_flag = true;
 }
 /**
- * Cambia a modo ventana y actualiza atributos de tamaño
+ * Cambia a modo ventana y actualiza atributos de tamaño.
  * 
  */
 private void setWindScr(){
@@ -212,6 +302,10 @@ private void setWindScr(){
     this.w_width = frame.getWidth();
     this.bfe_flag = false;
 }
+/**
+ * Establece el caracter que se presentará en el dispositivo gráfico.
+ * @param car Caracter Ascci a mostrar.
+ */
 private void DumpChar(char car){
 
 if (bfe_flag){
@@ -223,7 +317,7 @@ if (bfe_flag){
 
 }
 /**
- * Setup inicial de la clase, instanciación de objetos y creación de listeners
+ * Setup inicial de la clase, instanciación de objetos y creación de listeners.
  * 
  */
 private void setup(){
@@ -259,6 +353,12 @@ private void setup(){
     //setFullScr(); Windowed mode
     frame.setVisible(true);
 }
+
+/**
+ * Crea un objeto color en JavaSwing a partir de una cadena codificada de caracteres
+ * @param scmd sección del comando que contiene las 3 componentes de color.
+ * @return Objeto color generado
+ */
 private Color GenRGB(String scmd){
 
             r =Integer.parseInt(scmd.substring(1, 4));
@@ -317,8 +417,11 @@ token = cmd.charAt(0);
 return result;
 }
 /**
- * EL cliente se intenta registar al servidor de pixels, y si lo consigue
- * se queda en un blucle esperando comandos y ejecutándolos
+ * Instancia del objeto Tv_PixleClient.
+ * Genera un objeto NetworkClient y se registra en el servidor.
+ * Si tiene éxito, el método se queda ejecutando un bluce infinito
+ * donde se queda a la espera de un comando y lo ejecuta.
+ * El método termina cuando recibe el comando 'Q' (Terminar)
  */
 public void clientTV(){
     String cmd;
