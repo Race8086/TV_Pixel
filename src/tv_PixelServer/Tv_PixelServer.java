@@ -24,12 +24,52 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-
+/**
+ * Clase que implementa el servidor de Pixels, porciona atributos y métodos
+ * para establecer una red de monitores y poder enviarles (mediante sockets)
+ * los comandos que se desea ejecuten.
+ * @author loned
+ */
 public class Tv_PixelServer {
     
     public final boolean DEBUG = true;
+    /**
+     * Número de conexiones realizadas. NO IMPLEMENTADO
+     */
     int ncon=0;       // Número de conexiones tramitadas
-    
+    // meto un comentario
+    /**
+     * Matriz de sockets para gestionar las conexiones.
+     */
+    Socket[][] Tv_matrix;
+    /**
+     * Matriz de streams para envío de mensajes a los Clientes registrados.
+     */
+    PrintWriter [][] out;
+    /**
+     * Matriz de streams de lectura de resultados de los clientes.
+     */
+    BufferedReader[][] in;  
+    /**
+     * Matriz de valores lógicos de los pixels (Monitores) registrados.
+     * 
+     * Contiene el comando que se enviará / ejecutará el monitor.
+     * 
+     */
+    String[][] Tv_PixelValue;    
+// Atributos para gestión de las comunicaciones con sockets
+    /**
+     * Socket de cliente.
+     */
+    Socket sNetCli=null;
+    /**
+     * Socket de Servidor
+     */
+    ServerSocket sNetServer=null;  
+/**
+ * Array de comando de auto-diagnóstico que enviará el servidor una vez
+ * generada la matriz de monitores.
+ */ 
     String[] texto = {
     
         "V000000001>0000",
@@ -46,20 +86,11 @@ public class Tv_PixelServer {
         "V000000001 0000",
         "Q"  
     };
-
-
-// meto un comentario
-    Socket[][] Tv_matrix;
-    PrintWriter [][] out;
-    BufferedReader[][] in;  
-    String[][] Tv_PixelValue;    
-// Atributos para gestión de las comunicaciones con sockets
-    Socket sNetCli=null;
-    ServerSocket sNetServer=null;  
- 
-   
     
-    
+/**
+ * Genera un socket IP sobre el puerto 8086
+ * @return True: Socket creado correctamente, False: error al crear el socket.
+ */    
     
 public boolean Crea_NetServer(){
 
@@ -119,18 +150,24 @@ return true;
     }
     
   /**
-   * Establece valor lógico del pixel virtual
-   * @param fila        fila de la matriz
-   * @param columna     columna de la matriz
-   * @param cmd         valor
+   * Establece valor lógico del pixel virtual. El comnado se envía a través de la conexión socket de salida 
+   * establecida entre el servidor y el monitor registrado.
+   * @param fila        fila de la matriz (monitor registrado)
+   * @param columna     columna de la matriz (monitor registrado)
+   * @param cmd         valor en el formato de definido
    */  
     public void set_pixel(int fila, int columna, String cmd){
        
         out[fila][columna].println(cmd);  // Envía valor al cliente
     }
     
-    // update matrix necesita que antes se haya generado el 
-    // bitmap (actualización de los pixels)
+       
+/**
+ * Actualiza todos los pixels de la matriz , enviando el comando que ejecutará
+ * el monitor registrado.
+ * Llama a set_pixel para cada uno de los monitores registrados.
+ * La estructura Tv_PixelValue contiene la matriz de comandos para enviar
+ */    
     public void update_matrix(){
 
         int f;
@@ -146,7 +183,10 @@ return true;
     
     
     }
-    
+/**
+ * Destruye la matriz de monitores generada,eliminando todas las conexiones entre
+ * servidor y monitores registrados.
+ */    
     public void close_matrix(){
     // Cierra todas las conexines abiertas
     int f;
@@ -162,6 +202,15 @@ return true;
         } // fil
     }
 
+/**
+ * Se encarga de generar el bitmap que se mostrará, esencialmente la generación
+ * 
+ * del bitmap consiste en actualizar cada uno de los pixels (monitores registrado)
+ * @param filas resolución en horizontal del bitmap
+ * @param columnas resolución en vertical del bitmap
+ * @param _frame frame que se va a mostrar
+ * @return  true : operación realizada con éxito , false: detener renderización.
+ */    
 public boolean genera_bitmap(int filas, int columnas,int _frame){
     
     String cmd;
@@ -182,7 +231,20 @@ public boolean genera_bitmap(int filas, int columnas,int _frame){
         if ("Q".equals(cmd)) result = false;
         return result;
 }    
- public void run(int filas, int columnas){
+/**
+ * Instancia del servidor, que ejecuta un bucle de servicio
+ * 
+ * El servidor permite crear una matriz de filasxcolumnas de monitores que están corriendo una instancia de
+ * la clase cliente.El proceso es como sigue:
+ * - Se crear un serividor de conexión (Crea_NetServer)
+ * - Se registran filas x columnas servidores (crea_matrix)
+ * - Se entra en un bucle donde se construye el bitmap lógico (genera_bitmap) y se envía a todos los 
+ *   monitores registrados.
+ * - Es misión por tanto de genera_bitmap el construir las imágenes con el contenido y temporización que se desee.
+ * @param filas número de monitores en horizontal
+ * @param columnas número de monitores en vertical
+ */ 
+public void run(int filas, int columnas){
      
      int _frames=0;
      
